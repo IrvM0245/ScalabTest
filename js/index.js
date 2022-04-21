@@ -6,9 +6,12 @@ En caso de pasar las validaciones, enviar petición a la API entregada en clase 
 
 let isDataCorrect = false;
 let errorLabel = "";
+let urlAPI =
+  "https://30kd6edtfc.execute-api.us-east-1.amazonaws.com/prod/send-email";
 const botonEnviar = document.getElementsByName("btn_enviar")[0];
 const errorsList = document.getElementById("errors");
 let formDatos = document.querySelector(".form-landing-page");
+let selector = document.querySelector(".select-form");
 let inputName = document.getElementsByName("name_contact")[0];
 let regExpName = new RegExp(/^([A-Z][A-Za-z ]{3,60})$/);
 let inputEmail = document.getElementsByName("email_contact")[0];
@@ -69,19 +72,17 @@ function fieldValidation(regExp, input) {
   }
 }
 
-function sendInformation() {
+async function sendInformation() {
   if (isDataCorrect) {
-    sendRequest(
-      "https://30kd6edtfc.execute-api.us-east-1.amazonaws.com/prod/send-email",
-      JSON.stringify(
-        inputName.value,
-        inputEmail.value,
-        inputPhone.value,
-        inputComment.value
-      )
-    ).then((data) => {
-      console.log(data); // JSON data parsed by `data.json()` call
+    let dataRequest = JSON.stringify({
+      name: inputName.value,
+      email: inputEmail.value,
+      phone: inputPhone.value,
+      select: selector.value,
+      comment: inputComment.value,
     });
+    sendRequestPost(urlAPI, dataRequest);
+    //sendRequestGet(urlAPI);
   } else {
     alert("Necesita cumplir los requisistos de los campos.");
   }
@@ -106,20 +107,33 @@ function cleanErrors() {
   errorsList.innerHTML = "";
 }
 
-async function sendRequest(url, data = {}) {
-  const response = await fetch(url, {
-    method: "POST", // *GET, POST, PUT, DELETE, etc.
-    mode: "cors", // no-cors, *cors, same-origin
-    cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-    credentials: "same-origin", // include, *same-origin, omit
-    headers: {
-      "Content-Type": "application/json",
-      //"Access-Control-Allow-Origin": "*",
-      // 'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    redirect: "follow", // manual, *follow, error
-    referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-    body: JSON.stringify(data), // body data type must match "Content-Type" header
-  });
-  return response.json(); // parses JSON response into native JavaScript objects
+async function sendRequestPost(url, dataRequest) {
+  try {
+    console.log(dataRequest);
+    const response = await fetch(url, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: dataRequest,
+    });
+    const data = await response.json();
+    // enter you logic when the fetch is successful
+    console.log(data);
+  } catch (error) {
+    // enter your logic for when there is an error (ex. error toast)
+    console.log(error);
+  }
+}
+
+async function sendRequestGet(url) {
+  fetch(url)
+    .then((response) => {
+      console.log(response);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 }
